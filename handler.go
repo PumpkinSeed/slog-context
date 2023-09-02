@@ -3,6 +3,7 @@ package slogcontext
 import (
 	"context"
 	"log/slog"
+	"sync"
 )
 
 var _ slog.Handler = Handler{}
@@ -22,10 +23,13 @@ func (h Handler) Enabled(ctx context.Context, level slog.Level) bool {
 }
 
 func (h Handler) Handle(ctx context.Context, record slog.Record) error {
-	if v, ok := ctx.Value(fields).(contextVal); ok {
-		for key, val := range v {
-			record.AddAttrs(slog.Any(key, val))
-		}
+	if v, ok := ctx.Value(fields).(*sync.Map); ok {
+		v.Range(func(key, val any) bool {
+			if keyString, ok := key.(string); ok {
+				record.AddAttrs(slog.Any(keyString, val))
+			}
+			return true
+		})
 	}
 	return h.handler.Handle(ctx, record)
 }
