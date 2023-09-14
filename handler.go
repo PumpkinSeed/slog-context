@@ -35,7 +35,7 @@ func (h Handler) Handle(ctx context.Context, record slog.Record) error {
 }
 
 func (h Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return h.handler.WithAttrs(attrs)
+	return Handler{h.handler.WithAttrs(attrs)}
 }
 
 func (h Handler) WithGroup(name string) slog.Handler {
